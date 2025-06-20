@@ -1,8 +1,9 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -16,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
 import dao.CursoDAO;
@@ -30,6 +32,7 @@ public class TelaManutencaoCursos extends JFrame {
     private final JTextField campoData;
     private final JTextField campoSequencia;
     private final JTextField campoLayout;
+    private Curso cursoEmEdicao;
 
     public TelaManutencaoCursos() {
         super("Manutenção de Cursos");
@@ -40,11 +43,13 @@ public class TelaManutencaoCursos extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
 
-        modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome", "Data Proc.", "Sequência", "Layout"}, 0);
+        modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome", "Data Proc.", "Sequência", "Layout"}, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
         tabelaCursos = new JTable(modeloTabela);
         tabelaCursos.removeColumn(tabelaCursos.getColumnModel().getColumn(0));
-
-        carregarDadosTabela();
+        tabelaCursos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JPanel painelFormulario = new JPanel(new GridLayout(5, 2, 5, 5));
         campoNome = new JTextField();
@@ -52,6 +57,7 @@ public class TelaManutencaoCursos extends JFrame {
         campoSequencia = new JTextField();
         campoLayout = new JTextField();
         JButton botaoSalvar = new JButton("Salvar");
+        JButton botaoNovo = new JButton("Novo/Limpar");
         
         painelFormulario.add(new JLabel("Nome do Curso:"));
         painelFormulario.add(campoNome);
@@ -61,22 +67,31 @@ public class TelaManutencaoCursos extends JFrame {
         painelFormulario.add(campoSequencia);
         painelFormulario.add(new JLabel("Versão Layout:"));
         painelFormulario.add(campoLayout);
-        painelFormulario.add(new JLabel());
+        painelFormulario.add(botaoNovo);
         painelFormulario.add(botaoSalvar);
 
         JButton botaoExcluir = new JButton("Excluir Selecionado");
-        JPanel painelBotoesAcao = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        painelBotoesAcao.add(botaoExcluir);
-
+        
         JPanel painelSul = new JPanel(new BorderLayout());
         painelSul.add(painelFormulario, BorderLayout.NORTH);
-        painelSul.add(painelBotoesAcao, BorderLayout.SOUTH);
+        painelSul.add(botaoExcluir, BorderLayout.EAST);
 
         add(new JScrollPane(tabelaCursos), BorderLayout.CENTER);
         add(painelSul, BorderLayout.SOUTH);
 
+        carregarDadosTabela();
+
         botaoSalvar.addActionListener(e -> salvarCurso());
+        botaoNovo.addActionListener(e -> limparFormulario());
         botaoExcluir.addActionListener(e -> excluirCurso());
+        
+        tabelaCursos.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1) {
+                    carregarCursoParaEdicao();
+                }
+            }
+        });
     }
 
     private void carregarDadosTabela() {
@@ -93,21 +108,58 @@ public class TelaManutencaoCursos extends JFrame {
         }
     }
 
+    private void limparFormulario() {
+        this.cursoEmEdicao = null;
+        campoNome.setText("");
+        campoData.setText("");
+        campoSequencia.setText("");
+        campoLayout.setText("");
+        tabelaCursos.clearSelection();
+    }
+
+    private void carregarCursoParaEdicao() {
+        int linhaSelecionada = tabelaCursos.getSelectedRow();
+        if (linhaSelecionada == -1) return;
+
+        int idCurso = (int) modeloTabela.getValueAt(tabelaCursos.convertRowIndexToModel(linhaSelecionada), 0);
+        this.cursoEmEdicao = cursoDAO.buscarPorId(idCurso);
+
+        campoNome.setText(cursoEmEdicao.getNomeCurso());
+        campoData.setText(cursoEmEdicao.getDataProcessamento().toString());
+        campoSequencia.setText(String.valueOf(cursoEmEdicao.getSequenciaArquivo()));
+        campoLayout.setText(cursoEmEdicao.getVersaoLayout());
+    }
+
     private void salvarCurso() {
         try {
-            Curso novoCurso = new Curso();
-            novoCurso.setNomeCurso(campoNome.getText());
-            novoCurso.setDataProcessamento(LocalDate.parse(campoData.getText()));
-            novoCurso.setSequenciaArquivo(Integer.parseInt(campoSequencia.getText()));
-            novoCurso.setVersaoLayout(campoLayout.getText());
+            String nome = campoNome.getText();
+            LocalDate data = LocalDate.parse(campoData.getText());
+            int sequencia = Integer.parseInt(campoSequencia.getText());
+            String layout = campoLayout.getText();
 
-            cursoDAO.salvarManual(novoCurso);
-            
-            JOptionPane.showMessageDialog(this, "Curso salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            campoNome.setText("");
-            campoData.setText("");
-            campoSequencia.setText("");
-            campoLayout.setText("");
+            if (nome.trim().isEmpty() || layout.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos os campos são obrigatórios.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (cursoEmEdicao == null) {
+                Curso novoCurso = new Curso();
+                novoCurso.setNomeCurso(nome);
+                novoCurso.setDataProcessamento(data);
+                novoCurso.setSequenciaArquivo(sequencia);
+                novoCurso.setVersaoLayout(layout);
+                cursoDAO.salvarManual(novoCurso);
+                JOptionPane.showMessageDialog(this, "Curso salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                cursoEmEdicao.setNomeCurso(nome);
+                cursoEmEdicao.setDataProcessamento(data);
+                cursoEmEdicao.setSequenciaArquivo(sequencia);
+                cursoEmEdicao.setVersaoLayout(layout);
+                cursoDAO.atualizar(cursoEmEdicao);
+                JOptionPane.showMessageDialog(this, "Curso atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            }
+
+            limparFormulario();
             carregarDadosTabela();
 
         } catch (DateTimeParseException e) {
@@ -118,17 +170,15 @@ public class TelaManutencaoCursos extends JFrame {
     }
 
     private void excluirCurso() {
-        int linhaSelecionada = tabelaCursos.getSelectedRow();
-        if (linhaSelecionada == -1) {
+        if (cursoEmEdicao == null) {
             JOptionPane.showMessageDialog(this, "Selecione um curso na tabela para excluir.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        int idParaExcluir = (int) modeloTabela.getValueAt(tabelaCursos.convertRowIndexToModel(linhaSelecionada), 0);
         int confirmacao = JOptionPane.showConfirmDialog(this, "Deseja excluir o curso? (Isso excluirá suas fases e disciplinas em cascata)", "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
-        
         if (confirmacao == JOptionPane.YES_OPTION) {
-            cursoDAO.excluir(idParaExcluir);
+            cursoDAO.excluir(cursoEmEdicao.getId());
+            limparFormulario();
             carregarDadosTabela();
         }
     }

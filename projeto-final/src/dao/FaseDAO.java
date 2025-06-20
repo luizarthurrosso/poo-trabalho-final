@@ -38,8 +38,20 @@ public class FaseDAO {
             stmt.setInt(2, cursoId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new RuntimeException("Erro ao salvar fase.", e);
+        }
+    }
+
+    public void atualizar(Fase fase, int cursoId) {
+        String sql = "UPDATE tb_fases SET nome_fase = ?, curso_id = ? WHERE id = ?";
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, fase.getNomeFase());
+            stmt.setInt(2, cursoId);
+            stmt.setInt(3, fase.getId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao atualizar fase.", e);
         }
     }
     
@@ -53,13 +65,49 @@ public class FaseDAO {
                 Fase fase = new Fase();
                 fase.setId(rs.getInt("id"));
                 fase.setNomeFase(rs.getString("nome_fase"));
-                // Note: Adicionamos um campo extra na consulta (nome_curso) que não pertence ao modelo Fase.
-                // Vamos lidar com isso na montagem da tabela na tela.
                 fases.add(fase);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new RuntimeException("Erro ao buscar todas as fases.", e);
+        }
+        return fases;
+    }
+
+    public Fase buscarPorId(int id) {
+        String sql = "SELECT * FROM tb_fases WHERE id = ?";
+        Fase fase = null;
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    fase = new Fase();
+                    fase.setId(rs.getInt("id"));
+                    fase.setNomeFase(rs.getString("nome_fase"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao buscar fase por ID.", e);
+        }
+        return fase;
+    }
+
+    public List<Fase> buscarPorCurso(int cursoId) {
+        String sql = "SELECT * FROM tb_fases WHERE curso_id = ? ORDER BY nome_fase";
+        List<Fase> fases = new ArrayList<>();
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, cursoId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Fase fase = new Fase();
+                    fase.setId(rs.getInt("id"));
+                    fase.setNomeFase(rs.getString("nome_fase"));
+                    fases.add(fase);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao buscar fases por curso.", e);
         }
         return fases;
     }
@@ -71,7 +119,6 @@ public class FaseDAO {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new RuntimeException("Erro ao excluir fase.", e);
         }
     }
