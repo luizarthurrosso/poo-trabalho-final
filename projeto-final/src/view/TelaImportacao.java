@@ -35,7 +35,7 @@ public class TelaImportacao extends JFrame {
 
         this.importacaoService = new ImportacaoService();
         
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(700, 500);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));

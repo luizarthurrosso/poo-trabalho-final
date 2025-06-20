@@ -32,4 +32,9 @@ public class Professor {
     public void setTituloDocente(int tituloDocente) {
         this.tituloDocente = tituloDocente;
     }
+
+    @Override
+    public String toString() {
+        return this.nomeProfessor;
+    }
 }

@@ -1,13 +1,14 @@
 import javax.swing.SwingUtilities;
 
-import view.TelaImportacao;
+import view.TelaPrincipal;
 
-public class App {
+public class Main {
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new TelaImportacao().setVisible(true);
+                new TelaPrincipal().setVisible(true);
             }
         });
     }
