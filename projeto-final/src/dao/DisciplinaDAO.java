@@ -107,7 +107,6 @@ public class DisciplinaDAO {
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
 
-            // Atualiza a disciplina
             try (PreparedStatement stmt = conn.prepareStatement(sqlUpdateDisciplina)) {
                 stmt.setString(1, disciplina.getCodigoDisciplina());
                 stmt.setString(2, disciplina.getNomeDisciplina());
@@ -116,13 +115,11 @@ public class DisciplinaDAO {
                 stmt.executeUpdate();
             }
 
-            // Deleta os vínculos antigos de professores
             try (PreparedStatement stmt = conn.prepareStatement(sqlDeleteVinculos)) {
                 stmt.setInt(1, disciplina.getId());
                 stmt.executeUpdate();
             }
 
-            // Insere os novos vínculos
             try (PreparedStatement stmt = conn.prepareStatement(sqlInsertVinculos)) {
                 for (Professor professor : disciplina.getProfessores()) {
                     stmt.setInt(1, disciplina.getId());
@@ -149,7 +146,6 @@ public class DisciplinaDAO {
         Disciplina disciplina = null;
 
         try (Connection conn = ConnectionFactory.getConnection()) {
-            // Busca a disciplina
             try (PreparedStatement stmt = conn.prepareStatement(sqlDisciplina)) {
                 stmt.setInt(1, id);
                 try (ResultSet rs = stmt.executeQuery()) {
@@ -162,7 +158,6 @@ public class DisciplinaDAO {
                     }
                 }
             }
-            // Se encontrou a disciplina, busca seus professores
             if (disciplina != null) {
                 try (PreparedStatement stmt = conn.prepareStatement(sqlProfessores)) {
                     stmt.setInt(1, id);
@@ -182,5 +177,27 @@ public class DisciplinaDAO {
             throw new RuntimeException("Erro ao buscar disciplina por ID.", e);
         }
         return disciplina;
+    }
+
+    public List<Disciplina> buscarPorFase(int faseId) {
+        String sql = "SELECT * FROM tb_disciplinas WHERE fase_id = ? ORDER BY nome_disciplina";
+        List<Disciplina> disciplinas = new ArrayList<>();
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, faseId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Disciplina disciplina = new Disciplina();
+                    disciplina.setId(rs.getInt("id"));
+                    disciplina.setCodigoDisciplina(rs.getString("codigo_disciplina"));
+                    disciplina.setNomeDisciplina(rs.getString("nome_disciplina"));
+                    disciplina.setDiaSemana(rs.getInt("dia_semana"));
+                    disciplinas.add(disciplina);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao buscar disciplinas por fase.", e);
+        }
+        return disciplinas;
     }
 }

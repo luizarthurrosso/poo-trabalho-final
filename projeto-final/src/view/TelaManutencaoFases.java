@@ -48,12 +48,13 @@ public class TelaManutencaoFases extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
 
-        modeloTabela = new DefaultTableModel(new Object[]{"ID", "Nome da Fase", "Curso Pertencente"}, 0){
+        modeloTabela = new DefaultTableModel(new Object[]{"ID", "Curso ID", "Nome da Fase", "Curso Pertencente"}, 0){
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
         tabelaFases = new JTable(modeloTabela);
-        tabelaFases.removeColumn(tabelaFases.getColumnModel().getColumn(0));
+        tabelaFases.removeColumn(tabelaFases.getColumnModel().getColumn(0)); // Esconde ID da Fase
+        tabelaFases.removeColumn(tabelaFases.getColumnModel().getColumn(0)); // Esconde ID do Curso
         tabelaFases.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JPanel painelFormulario = new JPanel(new GridLayout(3, 2, 5, 5));
@@ -110,6 +111,7 @@ public class TelaManutencaoFases extends JFrame {
             while (rs.next()) {
                 modeloTabela.addRow(new Object[]{
                     rs.getInt("id"),
+                    rs.getInt("curso_id"),
                     rs.getString("nome_fase"),
                     rs.getString("nome_curso")
                 });
@@ -129,10 +131,26 @@ public class TelaManutencaoFases extends JFrame {
     }
 
     private void carregarFaseParaEdicao() {
-        // Lógica de edição para Fases é mais complexa devido ao JComboBox
-        // e foi omitida para simplicidade, mas seguiria o padrão das outras telas.
-        JOptionPane.showMessageDialog(this, "Funcionalidade de edição de fases não implementada neste exemplo.");
-        limparFormulario();
+        int linhaSelecionada = tabelaFases.getSelectedRow();
+        if (linhaSelecionada == -1) return;
+
+        int idFase = (int) modeloTabela.getValueAt(tabelaFases.convertRowIndexToModel(linhaSelecionada), 0);
+        int idCurso = (int) modeloTabela.getValueAt(tabelaFases.convertRowIndexToModel(linhaSelecionada), 1);
+        String nomeFase = (String) modeloTabela.getValueAt(tabelaFases.convertRowIndexToModel(linhaSelecionada), 2);
+        
+        this.faseEmEdicao = new Fase();
+        faseEmEdicao.setId(idFase);
+        faseEmEdicao.setNomeFase(nomeFase);
+        
+        campoNomeFase.setText(nomeFase);
+
+        for (int i = 0; i < comboBoxCursos.getItemCount(); i++) {
+            CursoItem item = comboBoxCursos.getItemAt(i);
+            if (item.getId() == idCurso) {
+                comboBoxCursos.setSelectedIndex(i);
+                break;
+            }
+        }
     }
 
     private void salvarFase() {
@@ -154,6 +172,7 @@ public class TelaManutencaoFases extends JFrame {
             faseDAO.salvarManual(novaFase, cursoSelecionado.getId());
             JOptionPane.showMessageDialog(this, "Fase salva com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         } else {
+             faseEmEdicao.setNomeFase(nome);
              faseDAO.atualizar(faseEmEdicao, cursoSelecionado.getId());
              JOptionPane.showMessageDialog(this, "Fase atualizada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         }

@@ -151,8 +151,6 @@ public class TelaManutencaoDisciplinas extends JFrame {
             }
         });
 
-        // --- CÓDIGO DA CORREÇÃO ---
-        // Garante que o seletor de fases carregue para o primeiro curso da lista na inicialização.
         if (comboBoxCursos.getItemCount() > 0) {
             CursoItem primeiroCurso = (CursoItem) comboBoxCursos.getSelectedItem();
             if (primeiroCurso != null) {
