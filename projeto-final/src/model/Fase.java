@@ -1,28 +1,16 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Fase {
+
     private int id;
-    private String codigoFase;
-    private int qtdDisciplinas;
-    private int qtdProfessores;
-    private int cursoId;
+    private String nomeFase;
+    private List<Disciplina> disciplinas;
 
-    public Fase(){
-    }
-
-    public Fase(int id, String codigoFase, int qtdDisciplinas, int qtdProfessores, int cursoId ){
-        this.id = id;
-        this.codigoFase = codigoFase;
-        this.qtdDisciplinas = qtdDisciplinas;
-        this.qtdProfessores = qtdProfessores;
-        this.cursoId = cursoId;
-    }
-
-    public Fase(String codigoFase, int qtdDisciplinas, int qtdProfessores, int cursoId ){
-        this.codigoFase = codigoFase;
-        this.qtdDisciplinas = qtdDisciplinas;
-        this.qtdProfessores = qtdProfessores;
-        this.cursoId = cursoId;
+    public Fase() {
+        this.disciplinas = new ArrayList<>();
     }
 
     public int getId() {
@@ -33,35 +21,23 @@ public class Fase {
         this.id = id;
     }
 
-    public String getCodigoFase() {
-        return codigoFase;
+    public String getNomeFase() {
+        return nomeFase;
     }
 
-    public void setCodigoFase(String codigoFase) {
-        this.codigoFase = codigoFase;
+    public void setNomeFase(String nomeFase) {
+        this.nomeFase = nomeFase;
     }
 
-    public int getQtdDisciplinas() {
-        return qtdDisciplinas;
+    public List<Disciplina> getDisciplinas() {
+        return disciplinas;
     }
 
-    public void setQtdDisciplinas(int qtdDisciplinas) {
-        this.qtdDisciplinas = qtdDisciplinas;
+    public void setDisciplinas(List<Disciplina> disciplinas) {
+        this.disciplinas = disciplinas;
     }
 
-    public int getQtdProfessores() {
-        return qtdProfessores;
-    }
-
-    public void setQtdProfessores(int qtdProfessores) {
-        this.qtdProfessores = qtdProfessores;
-    }
-
-    public int getCursoId() {
-        return cursoId;
-    }
-
-    public void setCursoId(int cursoId) {
-        this.cursoId = cursoId;
+    public void addDisciplina(Disciplina disciplina) {
+        this.disciplinas.add(disciplina);
     }
 }

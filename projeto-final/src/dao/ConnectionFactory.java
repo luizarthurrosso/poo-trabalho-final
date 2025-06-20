@@ -13,14 +13,4 @@ public class ConnectionFactory {
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
-
-    public static void closeConnection(Connection conn) {
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                System.err.println("Erro ao fechar conexão: " + e.getMessage());
-            }
-        }
-    }
 }

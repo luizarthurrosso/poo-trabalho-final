@@ -1,31 +1,18 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Disciplina {
+
     private int id;
     private String codigoDisciplina;
     private String nomeDisciplina;
-    private String diaSemanaCodigo;
-    private int qtdProfessores;
-    private int faseId;
+    private int diaSemana;
+    private List<Professor> professores;
 
-    public Disciplina(){
-    }
-
-    public Disciplina(int id, String codigoDisciplina, String nomeDisciplina, String diaSemanaCodigo, int qtdProfessores, int faseId) {
-        this.id = id;
-        this.codigoDisciplina = codigoDisciplina;
-        this.nomeDisciplina = nomeDisciplina;
-        this.diaSemanaCodigo = diaSemanaCodigo;
-        this.qtdProfessores = qtdProfessores;
-        this.faseId = faseId;
-    }
-
-    public Disciplina(String codigoDisciplina, String nomeDisciplina, String diaSemanaCodigo, int qtdProfessores, int faseId) {
-        this.codigoDisciplina = codigoDisciplina;
-        this.nomeDisciplina = nomeDisciplina;
-        this.diaSemanaCodigo = diaSemanaCodigo;
-        this.qtdProfessores = qtdProfessores;
-        this.faseId = faseId;
+    public Disciplina() {
+        this.professores = new ArrayList<>();
     }
 
     public int getId() {
@@ -52,27 +39,25 @@ public class Disciplina {
         this.nomeDisciplina = nomeDisciplina;
     }
 
-    public String getDiaSemanaCodigo() {
-        return diaSemanaCodigo;
+
+
+    public int getDiaSemana() {
+        return diaSemana;
     }
 
-    public void setDiaSemanaCodigo(String diaSemanaCodigo) {
-        this.diaSemanaCodigo = diaSemanaCodigo;
+    public void setDiaSemana(int diaSemana) {
+        this.diaSemana = diaSemana;
     }
 
-    public int getQtdProfessores() {
-        return qtdProfessores;
+    public List<Professor> getProfessores() {
+        return professores;
     }
 
-    public void setQtdProfessores(int qtdProfessores) {
-        this.qtdProfessores = qtdProfessores;
+    public void setProfessores(List<Professor> professores) {
+        this.professores = professores;
     }
-
-    public int getFaseId() {
-        return faseId;
-    }
-
-    public void setFaseId(int faseId) {
-        this.faseId = faseId;
+    
+    public void addProfessor(Professor professor) {
+        this.professores.add(professor);
     }
 }
